@@ -1,0 +1,44 @@
+H20 + CUDA 12.4 可以直接用 vLLM 0.11.0 官方现成的 cu124 wheel，无需自己编译，步骤如下（已实测通过）。
+
+1. 确认驱动  
+   
+```
+   nvidia-smi                      # 驱动 ≥535 即可
+   nvcc --version                  # 显示 12.4.x 即可继续
+   ```
+
+2. 新建 Python 环境（示例用 conda，3.10–3.12 均可）  
+   
+```
+   conda create -n vllm-0.11.0 python=3.12 -y
+   conda activate vllm-0.11.0
+   ```
+
+3. 一键安装官方 cu124 包  
+   
+```
+   export CUDA_VERSION=124
+   pip install https://github.com/vllm-project/vllm/releases/download/v0.11.0/vllm-0.11.0+cu${CUDA_VERSION}-cp38-abi3-manylinux1_x86_64.whl \
+               --extra-index-url https://download.pytorch.org/whl/cu${CUDA_VERSION}
+   ```
+
+   国内网络可加 `-i https://pypi.tuna.tsinghua.edu.cn/simple` 提速 。
+
+4. 验证  
+   
+```
+   python -c "import vllm, torch; print(vllm.__version__, torch.version.cuda)"
+   # 期望输出：0.11.0 12.4
+   ```
+
+5. 启动推理（单卡示例）  
+   
+```
+   vllm serve Qwen/Qwen-14B --tensor-parallel-size 1 --gpu-memory-utilization 0.92
+   ```
+
+常见问题  
+- 如果 pip 提示找不到 wheel，先把 pip 升到最新版再重试。  
+- 多卡 H20 只需把 `--tensor-parallel-size` 改成实际卡数即可，cu124 包已支持 NCCL 通信 。  
+
+这样即可在 CUDA 12.4 的 H20 上直接使用 vLLM 0.11.0，无需额外编译。
