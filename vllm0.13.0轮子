@@ -1,0 +1,39 @@
+目前官方没有专门声明“兼容 glibc 2.31”的 v0.13.0 成品 wheel，但可以从以下两处拿到“最接近”的 nightly 构建，它们均基于 manylinux_2_35（对应 glibc 2.35，>2.31，通常可在 2.31 系统上直接安装运行，除非个别符号缺失）：
+
+1. CPU 版本
+
+   https://wheels.vllm.ai/nightly/cpu/vllm
+
+   安装命令（推荐用 uv，pip 需手动拼 URL）：  
+   
+```
+   uv pip install vllm --extra-index-url https://wheels.vllm.ai/nightly/cpu
+   ```  
+
+   页面里给出的 0.13.0rc2 文件示例：  
+   
+```
+   vllm-0.13.0rc2.dev104+g4fa7ce46f.cpu-cp38-abi3-manylinux_2_35_x86_64.whl
+   ```  
+
+   该 wheel 采用 cp38-abi3，理论上 Python 3.8–3.11 都能用 。
+
+2. CUDA 12 版本
+
+   https://vllm-wheels.s3.us-west-2.amazonaws.com/nightly/
+
+   安装命令（可指定任意 commit）：  
+   
+```
+   export VLLM_COMMIT=<完整哈希>
+   pip install https://vllm-wheels.s3.us-west-2.amazonaws.com/${VLLM_COMMIT}/vllm-1.0.0.dev-cp38-abi3-manylinux1_x86_64.whl
+   ```  
+
+   同样基于 manylinux1（glibc 2.31）/manylinux_2_35，Python≥3.8 均可 。
+
+如果担心 glibc 符号版本问题，可先用 `ldd --version` 确认系统 glibc≥2.31，然后直接安装上述 wheel；若仍报 `GLIBC_2.32/2.35 not found`，只能：
+
+- 升级到 glibc≥2.35，或  
+- 在本地 `pip install -e .` 源码编译（编译时自动链接当前系统 glibc）。
+
+总结：官方未提供“专为 glibc 2.31”打标签的 0.13.0 成品，但以上 nightly wheel（manylinux_2_35）在大多数 glibc 2.31 环境可直接使用，可先尝试安装；如遇符号缺失再考虑自行编译。
