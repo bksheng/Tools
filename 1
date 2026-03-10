@@ -1,0 +1,14 @@
+# 复制到容器
+docker cp openssh-offline/. 容器名:/tmp/openssh/
+
+# 进入容器安装
+docker exec -it 容器名 bash
+cd /tmp/openssh/
+
+# 按依赖顺序安装（仅 server 必需）
+dpkg -i libcbor*.deb libfido2*.deb libedit2*.deb libwrap0*.deb 2>/dev/null || true
+dpkg -i openssh-server*.deb
+
+# 验证
+dpkg -l | grep openssh
+/usr/sbin/sshd -D
